@@ -1,0 +1,12 @@
+html,
+body,
+#app {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.el-tooltip__popper {
+    letter-spacing: 3px;
+    max-width: 300px;
+}
