@@ -53,6 +53,7 @@
 import axios from 'axios'
 import qs from 'qs'
 import {formatDate} from '../../assets/js/time.js'
+import Axios from 'axios'
 export default {
   name: "returning",
   data() {
@@ -60,7 +61,7 @@ export default {
       tableData: [],
       searchUserName:"",
       dataLength: 0,
-
+      states:false,
       // 分页
       currentPage: 1, //初始页
       pagesize: 7, //每页的数据
@@ -68,25 +69,35 @@ export default {
   },
   methods: {
     //判断是否逾期
-      isOverdue(returnDate){
-          let now = new Date();
-          let returnDate1 = new Date(returnDate);
-          let nowMill = now.getTime();
-          let returnMill = returnDate1.getTime();
-          if(returnMill<nowMill){
-              return true;
-          }else{
-              return false;
-          }
+      async isOverdue(row){
+          axios({
+              url:"/borrowInfo/bookIsBorrowing",
+              method: "get",
+              params:{
+                userId:row.userId
+              }
+          }).then(response=>{
+            // console.log(response.data.data);
+             this.states = response.data.data;
+            //  console.log(this.states);
+          }).catch(error=>{
+              this.$message({
+                  type: 'info',
+                  message: '失败',
+                  showClose:true
+              }); 
+          })
       },
-    open(data) {
-      console.log(data);
+    async open(data) {
+      this.isOverdue(data);
+      // console.log(data);
       this.$confirm("是否确定更改图书状态为已归还", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
       }).then(() => {
-        if(!this.isOverdue(data.returnDate)){
+        // console.log(this.states+'1111');
+        if(!this.states){
           axios({
               url:"/borrowInfo/returnBook",
               method: "put",
@@ -136,10 +147,10 @@ export default {
             }).then(response => {
                 let result = response.data;
                 if(result.code == 200) {
-                    console.log(result.data);
+                    // console.log(result.data);
                     this.tableData = result.data;
                     this.dataLength = result.count;
-                    console.log(this.tableData);
+                    // console.log(this.tableData);
                 }
             })
             .catch(error => {
